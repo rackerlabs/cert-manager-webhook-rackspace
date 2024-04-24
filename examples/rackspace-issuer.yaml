@@ -17,7 +17,7 @@ spec:
     solvers:
     - dns01:
         webhook:
-          groupName: com.yourdomain.acme
+          groupName: acme.mycompany.com
           solverName: rackspace
           config:
             authSecretRef: rackspace-creds
