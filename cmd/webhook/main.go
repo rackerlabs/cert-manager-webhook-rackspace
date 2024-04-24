@@ -281,7 +281,7 @@ func loadDomainId(service *gophercloud.ServiceClient, domainName string) (string
 		return domId, fmt.Errorf("unable to fetch domains in rackspace account: %v", listErr)
 	}
 
-	if domId != "" {
+	if domId == "" {
 		return domId, fmt.Errorf("failed to find domain `%s`", domainName)
 	}
 
