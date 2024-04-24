@@ -31,10 +31,12 @@ import (
 var GroupName = os.Getenv("GROUP_NAME")
 
 const banner = `
-cert-manager-webhook-rackspace
+%s
 version: %s (%s)
 
 `
+
+const SelfName = "cert-manager-webhook-rackspace"
 
 var (
 	Version = "local"
@@ -42,7 +44,7 @@ var (
 )
 
 func main() {
-	fmt.Printf(banner, Version, Gitsha)
+	fmt.Printf(banner, SelfName, Version, Gitsha)
 
 	if GroupName == "" {
 		panic("GROUP_NAME must be specified")
@@ -230,6 +232,8 @@ func clientConfig(c *rackspaceDNSProviderSolver, ch *v1alpha1.ChallengeRequest) 
 	if err != nil {
 		return config, fmt.Errorf("unable to authenticate to rackspace with `%s/%s`: %v", secretName, ch.ResourceNamespace, err)
 	}
+
+	provider.UserAgent.Prepend(SelfName, "/", Version)
 
 	service, err := goclouddns.NewCloudDNS(provider, gophercloud.EndpointOpts{})
 	if err != nil {
