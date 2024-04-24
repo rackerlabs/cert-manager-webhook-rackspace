@@ -1,10 +1,8 @@
 package internal
 
-import (
-	"github.com/gophercloud/gophercloud"
-)
+import "github.com/rackerlabs/goraxauth"
 
 type Config struct {
-	DomainName string
-	Service    *gophercloud.ServiceClient
+	DomainName  string
+	AuthOptions goraxauth.AuthOptions
 }
