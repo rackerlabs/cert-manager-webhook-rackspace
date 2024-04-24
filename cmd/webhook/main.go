@@ -30,7 +30,20 @@ import (
 
 var GroupName = os.Getenv("GROUP_NAME")
 
+const banner = `
+cert-manager-webhook-rackspace
+version: %s (%s)
+
+`
+
+var (
+	Version = "local"
+	Gitsha  = "?"
+)
+
 func main() {
+	fmt.Printf(banner, Version, Gitsha)
+
 	if GroupName == "" {
 		panic("GROUP_NAME must be specified")
 	}
