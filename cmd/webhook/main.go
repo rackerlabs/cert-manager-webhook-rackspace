@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"regexp"
 
 	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -124,10 +123,8 @@ func (c *rackspaceDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) erro
 		return fmt.Errorf("unable to find domain ID for domain `%s`: %v", cfg.DomainName, err)
 	}
 
-	name := recordName(ch.ResolvedFQDN, cfg.DomainName)
-
 	opts := records.CreateOpts{
-		Name:    name,
+		Name:    ch.ResolvedFQDN,
 		Type:    "TXT",
 		Data:    ch.Key,
 		TTL:     0,
@@ -286,14 +283,4 @@ func loadDomainId(service *gophercloud.ServiceClient, domainName string) (string
 	}
 
 	return domId, nil
-}
-
-func recordName(fqdn, domain string) string {
-	r := regexp.MustCompile("(.+)\\." + domain + "\\.")
-	name := r.FindStringSubmatch(fqdn)
-	if len(name) != 2 {
-		klog.Errorf("splitting domain name %s failed!", fqdn)
-		return ""
-	}
-	return name[1]
 }
