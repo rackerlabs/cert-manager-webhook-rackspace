@@ -26,7 +26,7 @@ To uninstall you can run the following:
 helm uninstall --namespace cert-manager cert-manager-webhook-rackspace
 ```
 
-## Usage
+## Usage with ClusterIssuer
 
 To use the Rackspace Cloud DNS webhook, you must have an account with admin permissions
 to the Cloud DNS service and must know the Rackspace API key for that account.
@@ -37,21 +37,21 @@ An example secret to provide the credentials would be:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: rackspace-creds
+  name: cert-manager-webhook-rackspace-creds
+  namespace: cert-manager
 type: Opaque
 stringData:
   username: my-username-here
   api-key: my-api-key-here
 ```
 
-Then you can create an `Issuer` or a `ClusterIssuer`. An example would be:
+Then you can create a `ClusterIssuer`. An example would be:
 
 ```yaml
 apiVersion: cert-manager.io/v1
-kind: Issuer
+kind: ClusterIssuer
 metadata:
   name: letsencrypt-staging
-  namespace: cm-test
 spec:
   acme:
     # The ACME server URL
@@ -70,7 +70,9 @@ spec:
           groupName: acme.mycompany.com  # replace with the groupName you set for the helm chart
           solverName: rackspace
           config:
-            authSecretRef: rackspace-creds
+            # for a ClusterIssuer this secret will live in the cert-manager namespace
+            # and will need to be named the deployment name + "-creds"
+            authSecretRef: cert-manager-webhook-rackspace-creds
             domainName: some.domain.tld
 ```
 
@@ -87,8 +89,48 @@ spec:
     - something.some.domain.tld
   issuerRef:
     name: letsencrypt-staging
-    kind: Issuer
+    kind: ClusterIssuer
   secretName: example-cert
+```
+
+## Usage with Issuer
+
+Using an `Issuer` is a bit more complicated since you must create
+the credentials secret in the namespace where your `Issuer` will
+live and give the `cert-manager-webhook-rackspace` ServiceAccount
+access to read it. In the example below it's assumed you'll be
+creating your secret named `name-of-secret`. Once this is
+done the steps will remain similar to the `ClusterIssuer` above.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cert-manager-webhook-rackspace:secret-reader
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+    resourceNames:
+      - "name-of-secret"
+    verbs:
+      - "get"
+      - "watch"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-manager-webhook-rackspace:secret-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-manager-webhook-rackspace:secret-reader
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: cert-manager-webhook-rackspace
+    namespace: cert-manager
 ```
 
 [cert-manager]: <https://cert-manager.io>
