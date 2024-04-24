@@ -7,8 +7,6 @@ builds:
       - GCO_ENABLED=0
     goos:
       - linux
-      - windows
-      - darwin
     ldflags:
       - -X 'main.Version={{.Version}}'
       - -X 'main.Gitsha={{.ShortCommit}}'
