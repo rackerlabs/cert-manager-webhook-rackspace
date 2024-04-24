@@ -1,0 +1,36 @@
+project_name: cert-manager-webhook-rackspace
+
+builds:
+  - main: ./cmd/webhook
+    binary: cert-manager-webhook-rackspace
+    env:
+      - GCO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    ldflags:
+      - -X 'main.Version={{.Version}}'
+      - -X 'main.Gitsha={{.ShortCommit}}'
+
+dockers:
+  - image_templates:
+      - '{{ envOrDefault "REGISTRY" "ghcr.io" }}/{{ envOrDefault "REG_ORG" "rackerlabs" }}/{{ .ProjectName }}:{{ .Version }}'
+      - '{{ envOrDefault "REGISTRY" "ghcr.io" }}/{{ envOrDefault "REG_ORG" "rackerlabs" }}/{{ .ProjectName }}:latest'
+    use: buildx
+    build_flag_templates:
+      - "--label=org.opencontainers.image.description=Rackspace Cloud DNS support for cert-manager"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - '^chore:'
+      - '^docs:'
+      - '^test:'
