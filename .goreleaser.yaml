@@ -17,6 +17,8 @@ dockers:
   - image_templates:
       - '{{ envOrDefault "REGISTRY" "ghcr.io" }}/{{ envOrDefault "REG_ORG" "rackerlabs" }}/{{ .ProjectName }}:{{ .Version }}'
       - '{{ envOrDefault "REGISTRY" "ghcr.io" }}/{{ envOrDefault "REG_ORG" "rackerlabs" }}/{{ .ProjectName }}:latest'
+    goos: linux
+    goarch: amd64
     use: buildx
     build_flag_templates:
       - "--label=org.opencontainers.image.description=Rackspace Cloud DNS support for cert-manager"
@@ -25,6 +27,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/amd64"
 
 changelog:
   use: github
