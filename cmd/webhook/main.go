@@ -128,8 +128,8 @@ func (c *rackspaceDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) erro
 		Name:    strings.TrimSuffix(ch.ResolvedFQDN, "."),
 		Type:    "TXT",
 		Data:    ch.Key,
-		TTL:     0,
-		Comment: "",
+		TTL:     300,
+		Comment: fmt.Sprintf("created by %s/%s", SelfName, Version),
 	}
 
 	record, err := records.Create(service, domId, opts).Extract()
@@ -150,7 +150,38 @@ func (c *rackspaceDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) erro
 // This is in order to facilitate multiple DNS validations for the same domain
 // concurrently.
 func (c *rackspaceDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
-	// TODO: add code that deletes a record from the DNS provider's console
+	klog.V(6).Infof("call function CleanUp: namespace=%s, zone=%s, fqdn=%s",
+		ch.ResourceNamespace, ch.ResolvedZone, ch.ResolvedFQDN)
+
+	cfg, err := clientConfig(c, ch)
+	if err != nil {
+		return fmt.Errorf("unable to get secret from namespace `%s`: %v", ch.ResourceNamespace, err)
+	}
+
+	service, err := authenticateClient(cfg)
+	if err != nil {
+		return fmt.Errorf("unable to authenticate to rackspace: %v", err)
+	}
+
+	klog.Infof("Configured Rackspace Cloud DNS client")
+
+	domId, err := loadDomainId(service, cfg.DomainName)
+	if err != nil {
+		return fmt.Errorf("unable to find domain ID for domain `%s`: %v", cfg.DomainName, err)
+	}
+
+	recordId, err := loadRecordId(service, domId, ch)
+	if err != nil {
+		return fmt.Errorf("unable to find DNS record for `%s`: %v", ch.ResolvedFQDN, err)
+	}
+
+	deleteErr := records.Delete(service, domId, recordId).ExtractErr()
+	if deleteErr != nil {
+		return fmt.Errorf("unable to delete DNS record for `%s`: %v", ch.ResolvedFQDN, err)
+	}
+
+	klog.Infof("Deleted txt record %v", ch.ResolvedFQDN)
+
 	return nil
 }
 
@@ -269,9 +300,18 @@ func loadDomainId(service *gophercloud.ServiceClient, domainName string) (string
 			return false, err
 		}
 
-		for _, domain := range domainList {
-			domId = domain.ID
+		if len(domainList) == 0 {
+			return false, fmt.Errorf("failed to find domain for `%s`", domainName)
 		}
+
+		for _, domain := range domainList {
+			if domain.Name == domainName {
+				domId = domain.ID
+				return true, err
+			}
+		}
+
+		// go to the next page
 		return true, err
 	})
 
@@ -284,4 +324,45 @@ func loadDomainId(service *gophercloud.ServiceClient, domainName string) (string
 	}
 
 	return domId, nil
+}
+
+func loadRecordId(service *gophercloud.ServiceClient, domId string, ch *v1alpha1.ChallengeRequest) (string, error) {
+	var recordId string
+
+	opts := records.ListOpts{
+		Name: strings.TrimSuffix(ch.ResolvedFQDN, "."),
+		Type: "TXT",
+		Data: ch.Key,
+	}
+
+	pager := records.List(service, domId, opts)
+
+	listErr := pager.EachPage(func(page pagination.Page) (bool, error) {
+		recordList, err := records.ExtractRecords(page)
+
+		if err != nil {
+			return false, err
+		}
+
+		if len(recordList) > 1 {
+			return false, fmt.Errorf("multiple records matched `%s`, manual cleanup required. count %d", ch.ResolvedFQDN, len(recordList))
+		}
+
+		if len(recordList) == 0 {
+			return false, fmt.Errorf("failed to find record for `%s`", ch.ResolvedFQDN)
+		}
+
+		recordId = recordList[0].ID
+		return true, err
+	})
+
+	if listErr != nil {
+		return "", fmt.Errorf("unable to fetch DNS records in rackspace account: %v", listErr)
+	}
+
+	if recordId == "" {
+		return "", fmt.Errorf("failed to find DNS record `%s`", ch.ResolvedFQDN)
+	}
+
+	return recordId, nil
 }
