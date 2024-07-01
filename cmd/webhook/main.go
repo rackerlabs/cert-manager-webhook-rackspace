@@ -114,19 +114,19 @@ func (c *rackspaceDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) erro
 
 	cfg, err := clientConfig(c, ch)
 	if err != nil {
-		return fmt.Errorf("unable to get secret from namespace `%s`: %v", ch.ResourceNamespace, err)
+		return fmt.Errorf("unable to get secret from namespace `%s`: %w", ch.ResourceNamespace, err)
 	}
 
 	service, err := authenticateClient(ctx, cfg)
 	if err != nil {
-		return fmt.Errorf("unable to authenticate to rackspace: %v", err)
+		return fmt.Errorf("unable to authenticate to rackspace: %w", err)
 	}
 
 	klog.Infof("Configured Rackspace Cloud DNS client")
 
 	domId, err := loadDomainId(ctx, service, cfg.DomainName)
 	if err != nil {
-		return fmt.Errorf("unable to find domain ID for domain `%s`: %v", cfg.DomainName, err)
+		return fmt.Errorf("unable to find domain ID for domain `%s`: %w", cfg.DomainName, err)
 	}
 
 	opts := records.CreateOpts{
@@ -139,7 +139,7 @@ func (c *rackspaceDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) erro
 
 	record, err := records.Create(ctx, service, domId, opts).Extract()
 	if err != nil {
-		return fmt.Errorf("unable to create DNS record `%v`: %v", ch.ResolvedFQDN, err)
+		return fmt.Errorf("unable to create DNS record `%v`: %w", ch.ResolvedFQDN, err)
 	}
 
 	klog.Infof("Presented txt record %v as %v", ch.ResolvedFQDN, record)
@@ -164,29 +164,29 @@ func (c *rackspaceDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) erro
 
 	cfg, err := clientConfig(c, ch)
 	if err != nil {
-		return fmt.Errorf("unable to get secret from namespace `%s`: %v", ch.ResourceNamespace, err)
+		return fmt.Errorf("unable to get secret from namespace `%s`: %w", ch.ResourceNamespace, err)
 	}
 
 	service, err := authenticateClient(ctx, cfg)
 	if err != nil {
-		return fmt.Errorf("unable to authenticate to rackspace: %v", err)
+		return fmt.Errorf("unable to authenticate to rackspace: %w", err)
 	}
 
 	klog.Infof("Configured Rackspace Cloud DNS client")
 
 	domId, err := loadDomainId(ctx, service, cfg.DomainName)
 	if err != nil {
-		return fmt.Errorf("unable to find domain ID for domain `%s`: %v", cfg.DomainName, err)
+		return fmt.Errorf("unable to find domain ID for domain `%s`: %w", cfg.DomainName, err)
 	}
 
 	recordId, err := loadRecordId(ctx, service, domId, ch)
 	if err != nil {
-		return fmt.Errorf("unable to find DNS record for `%s`: %v", ch.ResolvedFQDN, err)
+		return fmt.Errorf("unable to find DNS record for `%s`: %w", ch.ResolvedFQDN, err)
 	}
 
 	deleteErr := records.Delete(ctx, service, domId, recordId).ExtractErr()
 	if deleteErr != nil {
-		return fmt.Errorf("unable to delete DNS record for `%s`: %v", ch.ResolvedFQDN, err)
+		return fmt.Errorf("unable to delete DNS record for `%s`: %w", ch.ResolvedFQDN, err)
 	}
 
 	klog.Infof("Deleted txt record %v", ch.ResolvedFQDN)
@@ -232,7 +232,7 @@ func loadConfig(cfgJSON *extapi.JSON) (rackspaceDNSProviderConfig, error) {
 		return cfg, nil
 	}
 	if err := json.Unmarshal(cfgJSON.Raw, &cfg); err != nil {
-		return cfg, fmt.Errorf("error decoding solver config: %v", err)
+		return cfg, fmt.Errorf("error decoding solver config: %w", err)
 	}
 
 	return cfg, nil
@@ -250,17 +250,17 @@ func clientConfig(c *rackspaceDNSProviderSolver, ch *v1alpha1.ChallengeRequest) 
 	sec, err := c.client.CoreV1().Secrets(ch.ResourceNamespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 
 	if err != nil {
-		return config, fmt.Errorf("unable to get secret `%s/%s`: %v", ch.ResourceNamespace, secretName, err)
+		return config, fmt.Errorf("unable to get secret `%s/%s`: %w", ch.ResourceNamespace, secretName, err)
 	}
 
 	username, err := stringFromSecretData(sec.Data, "username")
 	if err != nil {
-		return config, fmt.Errorf("unable to get username from secret `%s/%s`: %v", ch.ResourceNamespace, secretName, err)
+		return config, fmt.Errorf("unable to get username from secret `%s/%s`: %w", ch.ResourceNamespace, secretName, err)
 	}
 
 	apiKey, err := stringFromSecretData(sec.Data, "api-key")
 	if err != nil {
-		return config, fmt.Errorf("unable to get api-key from secret `%s/%s`: %v", ch.ResourceNamespace, secretName, err)
+		return config, fmt.Errorf("unable to get api-key from secret `%s/%s`: %w", ch.ResourceNamespace, secretName, err)
 	}
 
 	ao := goraxauth.AuthOptions{
@@ -280,14 +280,14 @@ func clientConfig(c *rackspaceDNSProviderSolver, ch *v1alpha1.ChallengeRequest) 
 func authenticateClient(ctx context.Context, c internal.Config) (*gophercloud.ServiceClient, error) {
 	provider, err := goraxauth.AuthenticatedClient(ctx, c.AuthOptions)
 	if err != nil {
-		return nil, fmt.Errorf("unable to authenticate to rackspace as `%s`: %v", c.AuthOptions.Username, err)
+		return nil, fmt.Errorf("unable to authenticate to rackspace as `%s`: %w", c.AuthOptions.Username, err)
 	}
 
 	provider.UserAgent.Prepend(SelfName, "/", Version)
 
 	service, err := goclouddns.NewCloudDNS(provider, gophercloud.EndpointOpts{})
 	if err != nil {
-		return nil, fmt.Errorf("unable to find cloud dns endpoint for rackspace as `%s`: %v", c.AuthOptions.Username, err)
+		return nil, fmt.Errorf("unable to find cloud dns endpoint for rackspace as `%s`: %w", c.AuthOptions.Username, err)
 	}
 
 	return service, nil
@@ -325,7 +325,7 @@ func loadDomainId(ctx context.Context, service *gophercloud.ServiceClient, domai
 	})
 
 	if listErr != nil {
-		return domId, fmt.Errorf("unable to fetch domains in rackspace account: %v", listErr)
+		return domId, fmt.Errorf("unable to fetch domains in rackspace account: %w", listErr)
 	}
 
 	if domId == "" {
@@ -366,7 +366,7 @@ func loadRecordId(ctx context.Context, service *gophercloud.ServiceClient, domId
 	})
 
 	if listErr != nil {
-		return "", fmt.Errorf("unable to fetch DNS records in rackspace account: %v", listErr)
+		return "", fmt.Errorf("unable to fetch DNS records in rackspace account: %w", listErr)
 	}
 
 	if recordId == "" {
