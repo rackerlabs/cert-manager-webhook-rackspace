@@ -6,9 +6,9 @@ toolchain go1.22.2
 
 require (
 	github.com/cert-manager/cert-manager v1.14.4
-	github.com/gophercloud/gophercloud v1.11.0
-	github.com/rackerlabs/goclouddns v0.0.0-20240414183532-24285ad02e0b
-	github.com/rackerlabs/goraxauth v0.0.0-20240414183606-0163e8e7780f
+	github.com/gophercloud/gophercloud/v2 v2.0.0
+	github.com/rackerlabs/goclouddns v0.0.0-20240701182941-a63aed67a76c
+	github.com/rackerlabs/goraxauth v0.0.0-20240701164106-35b425b9a401
 	k8s.io/apiextensions-apiserver v0.30.0
 	k8s.io/apimachinery v0.30.0
 	k8s.io/client-go v0.30.0
@@ -79,17 +79,17 @@ require (
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/exp v0.0.0-20231226003508-02704c960a9b // indirect
-	golang.org/x/mod v0.15.0 // indirect
-	golang.org/x/net v0.23.0 // indirect
+	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
-	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/term v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/term v0.21.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.18.0 // indirect
+	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20240102182953-50ed04b92917 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240102182953-50ed04b92917 // indirect
@@ -113,5 +113,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
-
-replace github.com/gophercloud/gophercloud => github.com/cardoe/gophercloud v1.5.1-0.20240414024906-92421bde3201

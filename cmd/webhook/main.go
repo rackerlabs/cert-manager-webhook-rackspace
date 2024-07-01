@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,9 +18,9 @@ import (
 	"github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
 	"github.com/cert-manager/cert-manager/pkg/acme/webhook/cmd"
 
-	"github.com/gophercloud/gophercloud"
-	tokens2 "github.com/gophercloud/gophercloud/openstack/identity/v2/tokens"
-	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/gophercloud/gophercloud/v2"
+	tokens2 "github.com/gophercloud/gophercloud/v2/openstack/identity/v2/tokens"
+	"github.com/gophercloud/gophercloud/v2/pagination"
 
 	"github.com/rackerlabs/cert-manager-webhook-rackspace/internal"
 	"github.com/rackerlabs/goclouddns"
@@ -107,19 +108,23 @@ func (c *rackspaceDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) erro
 	klog.V(6).Infof("call function Present: namespace=%s, zone=%s, fqdn=%s",
 		ch.ResourceNamespace, ch.ResolvedZone, ch.ResolvedFQDN)
 
+	timeout := 60 * time.Second
+	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
+	defer cancel()
+
 	cfg, err := clientConfig(c, ch)
 	if err != nil {
 		return fmt.Errorf("unable to get secret from namespace `%s`: %v", ch.ResourceNamespace, err)
 	}
 
-	service, err := authenticateClient(cfg)
+	service, err := authenticateClient(ctx, cfg)
 	if err != nil {
 		return fmt.Errorf("unable to authenticate to rackspace: %v", err)
 	}
 
 	klog.Infof("Configured Rackspace Cloud DNS client")
 
-	domId, err := loadDomainId(service, cfg.DomainName)
+	domId, err := loadDomainId(ctx, service, cfg.DomainName)
 	if err != nil {
 		return fmt.Errorf("unable to find domain ID for domain `%s`: %v", cfg.DomainName, err)
 	}
@@ -132,7 +137,7 @@ func (c *rackspaceDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) erro
 		Comment: fmt.Sprintf("created by %s/%s", SelfName, Version),
 	}
 
-	record, err := records.Create(service, domId, opts).Extract()
+	record, err := records.Create(ctx, service, domId, opts).Extract()
 	if err != nil {
 		return fmt.Errorf("unable to create DNS record `%v`: %v", ch.ResolvedFQDN, err)
 	}
@@ -153,29 +158,33 @@ func (c *rackspaceDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) erro
 	klog.V(6).Infof("call function CleanUp: namespace=%s, zone=%s, fqdn=%s",
 		ch.ResourceNamespace, ch.ResolvedZone, ch.ResolvedFQDN)
 
+	timeout := 60 * time.Second
+	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
+	defer cancel()
+
 	cfg, err := clientConfig(c, ch)
 	if err != nil {
 		return fmt.Errorf("unable to get secret from namespace `%s`: %v", ch.ResourceNamespace, err)
 	}
 
-	service, err := authenticateClient(cfg)
+	service, err := authenticateClient(ctx, cfg)
 	if err != nil {
 		return fmt.Errorf("unable to authenticate to rackspace: %v", err)
 	}
 
 	klog.Infof("Configured Rackspace Cloud DNS client")
 
-	domId, err := loadDomainId(service, cfg.DomainName)
+	domId, err := loadDomainId(ctx, service, cfg.DomainName)
 	if err != nil {
 		return fmt.Errorf("unable to find domain ID for domain `%s`: %v", cfg.DomainName, err)
 	}
 
-	recordId, err := loadRecordId(service, domId, ch)
+	recordId, err := loadRecordId(ctx, service, domId, ch)
 	if err != nil {
 		return fmt.Errorf("unable to find DNS record for `%s`: %v", ch.ResolvedFQDN, err)
 	}
 
-	deleteErr := records.Delete(service, domId, recordId).ExtractErr()
+	deleteErr := records.Delete(ctx, service, domId, recordId).ExtractErr()
 	if deleteErr != nil {
 		return fmt.Errorf("unable to delete DNS record for `%s`: %v", ch.ResolvedFQDN, err)
 	}
@@ -268,8 +277,8 @@ func clientConfig(c *rackspaceDNSProviderSolver, ch *v1alpha1.ChallengeRequest) 
 	return config, nil
 }
 
-func authenticateClient(c internal.Config) (*gophercloud.ServiceClient, error) {
-	provider, err := goraxauth.AuthenticatedClient(c.AuthOptions)
+func authenticateClient(ctx context.Context, c internal.Config) (*gophercloud.ServiceClient, error) {
+	provider, err := goraxauth.AuthenticatedClient(ctx, c.AuthOptions)
 	if err != nil {
 		return nil, fmt.Errorf("unable to authenticate to rackspace as `%s`: %v", c.AuthOptions.Username, err)
 	}
@@ -284,16 +293,16 @@ func authenticateClient(c internal.Config) (*gophercloud.ServiceClient, error) {
 	return service, nil
 }
 
-func loadDomainId(service *gophercloud.ServiceClient, domainName string) (string, error) {
+func loadDomainId(ctx context.Context, service *gophercloud.ServiceClient, domainName string) (string, error) {
 	var domId string
 
 	opts := domains.ListOpts{
 		Name: domainName,
 	}
 
-	pager := domains.List(service, opts)
+	pager := domains.List(ctx, service, opts)
 
-	listErr := pager.EachPage(func(page pagination.Page) (bool, error) {
+	listErr := pager.EachPage(ctx, func(ctx context.Context, page pagination.Page) (bool, error) {
 		domainList, err := domains.ExtractDomains(page)
 
 		if err != nil {
@@ -326,7 +335,7 @@ func loadDomainId(service *gophercloud.ServiceClient, domainName string) (string
 	return domId, nil
 }
 
-func loadRecordId(service *gophercloud.ServiceClient, domId string, ch *v1alpha1.ChallengeRequest) (string, error) {
+func loadRecordId(ctx context.Context, service *gophercloud.ServiceClient, domId string, ch *v1alpha1.ChallengeRequest) (string, error) {
 	var recordId string
 
 	opts := records.ListOpts{
@@ -335,9 +344,9 @@ func loadRecordId(service *gophercloud.ServiceClient, domId string, ch *v1alpha1
 		Data: ch.Key,
 	}
 
-	pager := records.List(service, domId, opts)
+	pager := records.List(ctx, service, domId, opts)
 
-	listErr := pager.EachPage(func(page pagination.Page) (bool, error) {
+	listErr := pager.EachPage(ctx, func(ctx context.Context, page pagination.Page) (bool, error) {
 		recordList, err := records.ExtractRecords(page)
 
 		if err != nil {
