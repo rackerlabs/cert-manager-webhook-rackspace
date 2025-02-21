@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"os"
 	"testing"
+	"time"
 
 	acmetest "github.com/cert-manager/cert-manager/test/acme"
 )
@@ -19,6 +20,13 @@ func TestRunsSuite(t *testing.T) {
 	// ChallengeRequest passed as part of the test cases.
 	//
 
+	// increase polling time to 10 seconds
+	pollTime, _ := time.ParseDuration("10s")
+	// increase propogation timeout to 6 minutes
+    // since the Rackspace minimum is 5 minutes
+	timeOut, _ := time.ParseDuration("6m")
+
+	// create a unique domain to test against
 	fqdn = GetRandomString(20) + "." + zone
 
 	// Uncomment the below fixture when implementing your custom DNS provider
@@ -27,6 +35,8 @@ func TestRunsSuite(t *testing.T) {
 		acmetest.SetResolvedFQDN(fqdn),
 		acmetest.SetAllowAmbientCredentials(false),
 		acmetest.SetManifestPath("../../testdata/rackspace"),
+		acmetest.SetPollInterval(pollTime),
+		acmetest.SetPropagationLimit(timeOut),
 	)
 	fixture.RunConformance(t)
 
