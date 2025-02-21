@@ -39,3 +39,20 @@ jobs:
           distribution: goreleaser
           version: latest
           args: release --clean --skip=publish --snapshot
+
+  test:
+    # using secrets so this will only work not on a fork
+    if: github.event.pull_request.head.repo.fork != true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      # this depends on OS_USERNAME and RAX_API_KEY being secrets in GitHub Actions
+      # they come from https://passwordsafe.corp.rackspace.com/projects/40558/credentials
+      - run: make test
+        env:
+          OS_USERNAME: ${{ secrets.OS_USERNAME }}
+          RAX_API_KEY: ${{ secrets.RAX_API_KEY }}
