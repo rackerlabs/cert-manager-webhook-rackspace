@@ -1,1 +1,4 @@
-{}
+{
+  "authSecretRef": "cert-manager-webhook-rackspace-creds",
+  "domainName": "cert-manager.undercloud.rax.io."
+}

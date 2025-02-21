@@ -10,9 +10,13 @@
 
 # builds
 dist/
+_out/
 
 # Test binary, built with `go test -c`
 *.test
+
+# artifact for testing with actual data
+testdata/rackspace/cert-manager-webhook-rackspace-creds.yml
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out

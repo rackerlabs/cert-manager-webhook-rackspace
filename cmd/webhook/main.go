@@ -124,13 +124,18 @@ func (c *rackspaceDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) erro
 
 	klog.Infof("Configured Rackspace Cloud DNS client")
 
-	domId, err := loadDomainId(ctx, service, cfg.DomainName)
+	// Rackspace will create any case but reply back with lower case, it doesn't like trailing dots
+	// so make our calls consistent on create and lookup/delete
+	domainName := strings.ToLower(strings.TrimSuffix(ch.ResolvedZone, "."))
+	fqdn := strings.ToLower(strings.TrimSuffix(ch.ResolvedFQDN, "."))
+
+	domId, err := loadDomainId(ctx, service, domainName)
 	if err != nil {
-		return fmt.Errorf("unable to find domain ID for domain `%s`: %w", cfg.DomainName, err)
+		return fmt.Errorf("unable to find domain ID for domain `%s`: %w", ch.ResolvedZone, err)
 	}
 
 	opts := records.CreateOpts{
-		Name:    strings.TrimSuffix(ch.ResolvedFQDN, "."),
+		Name:    fqdn,
 		Type:    "TXT",
 		Data:    ch.Key,
 		TTL:     300,
@@ -144,7 +149,6 @@ func (c *rackspaceDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) erro
 
 	klog.Infof("Presented txt record %v as %v", ch.ResolvedFQDN, record)
 
-	// TODO: add code that sets a record in the DNS provider's console
 	return nil
 }
 
@@ -174,9 +178,13 @@ func (c *rackspaceDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) erro
 
 	klog.Infof("Configured Rackspace Cloud DNS client")
 
-	domId, err := loadDomainId(ctx, service, cfg.DomainName)
+	// Rackspace will create any case but reply back with lower case, it doesn't like trailing dots
+	// so make our calls consistent on create and lookup/delete
+	domainName := strings.ToLower(strings.TrimSuffix(ch.ResolvedZone, "."))
+
+	domId, err := loadDomainId(ctx, service, domainName)
 	if err != nil {
-		return fmt.Errorf("unable to find domain ID for domain `%s`: %w", cfg.DomainName, err)
+		return fmt.Errorf("unable to find domain ID for domain `%s`: %w", ch.ResolvedZone, err)
 	}
 
 	recordId, err := loadRecordId(ctx, service, domId, ch)
@@ -338,8 +346,12 @@ func loadDomainId(ctx context.Context, service *gophercloud.ServiceClient, domai
 func loadRecordId(ctx context.Context, service *gophercloud.ServiceClient, domId string, ch *v1alpha1.ChallengeRequest) (string, error) {
 	var recordId string
 
+	// Rackspace will create any case but reply back with lower case, it doesn't like trailing dots
+	// so make our calls consistent on create and lookup/delete
+	fqdn := strings.ToLower(strings.TrimSuffix(ch.ResolvedFQDN, "."))
+
 	opts := records.ListOpts{
-		Name: strings.TrimSuffix(ch.ResolvedFQDN, "."),
+		Name: fqdn,
 		Type: "TXT",
 		Data: ch.Key,
 	}

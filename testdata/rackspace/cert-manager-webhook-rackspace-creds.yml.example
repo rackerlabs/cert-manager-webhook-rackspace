@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cert-manager-webhook-rackspace-creds
+data:
+  # base64 encoded username and api-key
+  username: ${OS_USERNAME_ENCODED}
+  api-key: ${RAX_API_KEY_ENCODED}
