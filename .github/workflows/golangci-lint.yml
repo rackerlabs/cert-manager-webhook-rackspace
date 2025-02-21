@@ -24,3 +24,4 @@ jobs:
         with:
           version: v1.64
           only-new-issues: true
+          args: --timeout=20m
