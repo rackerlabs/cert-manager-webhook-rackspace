@@ -52,6 +52,8 @@ jobs:
           PKG_VER=${GITHUB_REF_NAME#v}
           sed -e "s/^appVersion:.*/appVersion: ${PKG_VER}/" -i charts/cert-manager-webhook-rackspace/Chart.yaml
       - uses: helm/chart-releaser-action@v1.7.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           skip_upload: true
       - run: |
