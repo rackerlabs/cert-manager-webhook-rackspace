@@ -53,5 +53,5 @@ jobs:
             -e "s/^version:.*/version: ${PKG_VER}/" \
             -i charts/cert-manager-webhook-rackspace/Chart.yaml
           helm package -u -d . charts/cert-manager-webhook-rackspace
-          helm push cert-manager-webhook-rackspace-${PKG_VER}.tgz "oci://ghcr.io/$GITHUB_REPOSITORY"
+          helm push cert-manager-webhook-rackspace-${PKG_VER}.tgz "oci://ghcr.io/$GITHUB_REPOSITORY_OWNER/charts"
 

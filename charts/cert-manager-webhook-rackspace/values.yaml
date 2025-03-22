@@ -14,6 +14,8 @@ certManager:
 
 image:
   repository: ghcr.io/rackerlabs/cert-manager-webhook-rackspace
+  # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
+  tag: ""
   pullPolicy: IfNotPresent
 
 nameOverride: ""
@@ -40,3 +42,13 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+
+podSecurityContext:
+  runAsGroup: 1000
+  runAsUser: 1000
+  runAsNonRoot: true
