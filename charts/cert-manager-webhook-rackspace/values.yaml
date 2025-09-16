@@ -43,6 +43,10 @@ tolerations: []
 
 affinity: {}
 
+
+# -- List of key: values to add to container environment
+env: {}
+
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
