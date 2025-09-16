@@ -2,7 +2,7 @@ apiVersion: v1
 appVersion: "0.0.0"
 description: Rackspace Cloud DNS webhook for cert-manager support
 name: cert-manager-webhook-rackspace
-version: 0.1.0
+version: 0.2.0
 maintainers:
   - name: cardoe
     email: doug.goldstein@rackspace.com
