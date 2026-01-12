@@ -128,8 +128,8 @@ github.com/prometheus/common v0.46.0 h1:doXzt5ybi1HBKpsZOL0sSkaNHJJqkyfEWZGGqqSc
 github.com/prometheus/common v0.46.0/go.mod h1:Tp0qkxpb9Jsg54QMe+EAmqXkSV7Evdy1BTn+g2pa/hQ=
 github.com/prometheus/procfs v0.15.1 h1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=
 github.com/prometheus/procfs v0.15.1/go.mod h1:fB45yRUv8NstnjriLhBQLuOUt+WW4BsoGhij/e3PBqk=
-github.com/rackerlabs/goclouddns v0.0.0-20240701182941-a63aed67a76c h1:qbOImSDKx6BU0HccJ76bE0Np6ZqncLjVUIlfM6EfT5w=
-github.com/rackerlabs/goclouddns v0.0.0-20240701182941-a63aed67a76c/go.mod h1:B8ss5N46nPrGGtfUUbPi2kvZjOKFDQaHadcqR6ueJ1w=
+github.com/rackerlabs/goclouddns v0.0.1 h1:JqeoYruhk+CqGIcjh2rh/n1ny4lqkpirQcMOME2e/V0=
+github.com/rackerlabs/goclouddns v0.0.1/go.mod h1:B8ss5N46nPrGGtfUUbPi2kvZjOKFDQaHadcqR6ueJ1w=
 github.com/rackerlabs/goraxauth v0.0.0-20260107155317-f536fcae8f4e h1:SJZwTUBPDygKHxnrBEnRG55XcbwpyqwsymUNDUsr+cQ=
 github.com/rackerlabs/goraxauth v0.0.0-20260107155317-f536fcae8f4e/go.mod h1:KFtfIfbD9umQ37l0vo8bZodo6mxA+yuRZ3V5jJ6818Y=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=

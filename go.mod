@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/cert-manager/cert-manager v1.15.5
 	github.com/gophercloud/gophercloud/v2 v2.10.0
-	github.com/rackerlabs/goclouddns v0.0.0-20240701182941-a63aed67a76c
+	github.com/rackerlabs/goclouddns v0.0.1
 	github.com/rackerlabs/goraxauth v0.0.0-20260107155317-f536fcae8f4e
 	k8s.io/apiextensions-apiserver v0.30.10
 	k8s.io/apimachinery v0.30.10
