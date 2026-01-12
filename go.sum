@@ -76,6 +76,8 @@ github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/gophercloud/gophercloud/v2 v2.0.0 h1:iH0x0Ji79a/ULzmq95fvOBAyie7+M+wUAEu+JrRMsCk=
 github.com/gophercloud/gophercloud/v2 v2.0.0/go.mod h1:ZKbcGNjxFTSaP5wlvtLDdsppllD/UGGvXBPqcjeqA8Y=
+github.com/gophercloud/gophercloud/v2 v2.10.0 h1:NRadC0aHNvy4iMoFXj5AFiPmut/Sj3hAPAo9B59VMGc=
+github.com/gophercloud/gophercloud/v2 v2.10.0/go.mod h1:Ki/ILhYZr/5EPebrPL9Ej+tUg4lqx71/YH2JWVeU+Qk=
 github.com/gorilla/websocket v1.5.1 h1:gmztn0JnHVt9JZquRuzLw3g4wouNVzKL15iLr/zn/QY=
 github.com/gorilla/websocket v1.5.1/go.mod h1:x3kM2JMyaluk02fnUJpQuwD2dCS5NDG2ZHL0uE0tcaY=
 github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 h1:+9834+KizmvFV7pXQGSXQTsaWhq2GjuNUt0aUU0YBYw=
@@ -132,6 +134,8 @@ github.com/rackerlabs/goclouddns v0.0.0-20240701182941-a63aed67a76c h1:qbOImSDKx
 github.com/rackerlabs/goclouddns v0.0.0-20240701182941-a63aed67a76c/go.mod h1:B8ss5N46nPrGGtfUUbPi2kvZjOKFDQaHadcqR6ueJ1w=
 github.com/rackerlabs/goraxauth v0.0.0-20240701164106-35b425b9a401 h1:e3WJlh31HRxZz8BDW1aXheI/Ed6ej8sTuXvvj15ADa0=
 github.com/rackerlabs/goraxauth v0.0.0-20240701164106-35b425b9a401/go.mod h1:9oICyo1cogXIwvRn+uk3bVwFQfSM6SZIa/OJEPhc7B8=
+github.com/rackerlabs/goraxauth v0.0.0-20260107155317-f536fcae8f4e h1:SJZwTUBPDygKHxnrBEnRG55XcbwpyqwsymUNDUsr+cQ=
+github.com/rackerlabs/goraxauth v0.0.0-20260107155317-f536fcae8f4e/go.mod h1:KFtfIfbD9umQ37l0vo8bZodo6mxA+yuRZ3V5jJ6818Y=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
