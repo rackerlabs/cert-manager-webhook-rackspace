@@ -12,6 +12,9 @@
   "labels": ["dependencies"],
   "assignees": ["cardoe"],
   "reviewers": ["cardoe"],
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
   "packageRules": [
     {
       "matchManagers": ["gomod"],
