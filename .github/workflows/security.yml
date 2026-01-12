@@ -1,0 +1,88 @@
+name: Security
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+#  govulncheck:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-go@v5
+#        with:
+#          go-version-file: 'go.mod'
+#          cache: true
+#      - name: Run govulncheck
+#        run: |
+#          go install golang.org/x/vuln/cmd/govulncheck@latest
+#          govulncheck ./...
+
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  docker-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - uses: anchore/sbom-action/download-syft@v0
+      - uses: goreleaser/goreleaser-action@v5
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean --skip=publish --snapshot
+      - name: Set image name for scanning
+        id: image
+        run: |
+          IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "cert-manager-webhook-rackspace.*amd64" | head -1)
+          echo "name=$IMAGE" >> $GITHUB_OUTPUT
+      - name: Generate SBOM with Syft
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ steps.image.outputs.name }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+      - name: Run Trivy vulnerability scanner on image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.image.outputs.name }}
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+      - name: Upload image scan results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: 'trivy-image-results.sarif'
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.spdx.json
