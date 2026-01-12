@@ -1,0 +1,47 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":automergeDigest",
+    ":automergePatch"
+  ],
+  "schedule": ["before 6am on monday"],
+  "timezone": "America/Chicago",
+  "labels": ["dependencies"],
+  "assignees": ["cardoe"],
+  "reviewers": ["cardoe"],
+  "packageRules": [
+    {
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["indirect"],
+      "enabled": false
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["github.com/cert-manager/cert-manager"],
+      "groupName": "cert-manager",
+      "schedule": ["before 6am on the first day of the month"]
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchPackagePatterns": ["^k8s\\.io/"],
+      "groupName": "kubernetes",
+      "schedule": ["before 6am on the first day of the month"]
+    },
+    {
+      "matchManagers": ["helm-values"],
+      "matchFileNames": ["charts/**/Chart.yaml"],
+      "groupName": "helm-chart"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "automerge": true
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  }
+}
